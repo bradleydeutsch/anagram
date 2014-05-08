@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Anagram Game</title>
+	</head>
+	<body>
+		<div id="anagramGameContainer">
+		</div>
+		
+		<script type="text/template" id="game-template">
+			<h1>Choose a username</h1>
+			<form id="createNewGameForm">
+				<label for="username">Username:</label>
+				<input type="text" id="username" value="Brad" />
+				
+				<input type="submit" value="Start Game &raquo;" />
+			</form>
+		</script>
+		
+		<script type="text/template" id="new-game-template">
+			<h1>...</h1>
+			<div id="timer">...</div>
+			<ul></ul>
+			<table></table>
+			<form id="submitStringForm">
+				<input type="text" disabled="disabled" />
+			</form>
+		</script>
+		
+		<script type="text/template" id="player-template">
+			<li>[[= username ]]</li>
+		</script>
+		
+		<script type="text/template" id="score-template">
+			<td>[[= user.username ]]</td><td>[[= word ]]</td><td>[[= score ]]</td>
+		</script>
+		
+		<script type="text/template" id="game-over-template">
+			<h2>Game Over! [[ if (typeof(score) !== 'undefined') { ]][[= user.username ]] wins with word "[[= word ]]" and a score of [[= score ]][[ } ]]</h2>
+		</script>
+		
+		<script src="http://localhost:8000/socket.io/socket.io.js"></script>
+		
+		<script type="text/javascript" src="assets/js/lib/jquery-2.0.3.min.js"></script>
+		<script type="text/javascript" src="assets/js/lib/underscore-1.5.2.min.js"></script>
+		<script type="text/javascript" src="assets/js/lib/backbone-1.1.2.min.js"></script>
+		<script type="text/javascript" src="assets/js/lib/backbone-extensions.js"></script>
+		
+		<script type="text/javascript" src="assets/js/config.js"></script>
+		
+		<script type="text/javascript" src="assets/js/lib/Utils.js"></script>
+		
+		<script type="text/javascript" src="assets/js/model/SuperModel.js"></script>
+		<script type="text/javascript" src="assets/js/model/User.js"></script>
+		<script type="text/javascript" src="assets/js/model/Word.js"></script>
+		
+		<script type="text/javascript" src="assets/js/view/SuperView.js"></script>
+		<script type="text/javascript" src="assets/js/view/Word.js"></script>
+		
+		<script type="text/javascript" src="assets/js/collection/SuperCollection.js"></script>
+		<script type="text/javascript" src="assets/js/collection/Leaderboard.js"></script>
+		<script type="text/javascript" src="assets/js/collection/AnagramGameLeaderboard.js"></script>
+		
+		<script type="text/javascript" src="assets/js/app/SuperApp.js"></script>
+		<script type="text/javascript" src="assets/js/app/Dictionary.js"></script>
+		<script type="text/javascript" src="assets/js/app/Game.js"></script>
+		
+		<script type="text/javascript" src="assets/js/page/SuperPage.js"></script>
+		<script type="text/javascript" src="assets/js/page/Game.js"></script>
+		
+		<script type="text/javascript">
+			var ann,
+				dictionary = new game.applications.Dictionary({
+					callback : function (dictionary) {
+						ann = new game.pages.AnagramGamePage({
+							Dictionary : dictionary
+						});
+					}
+				});
+		</script>
+	</body>
+</html>
