@@ -20,7 +20,7 @@ function init() {
 	setEventHandlers();
 }
 
-var setEventHandlers = function() {
+var setEventHandlers = function () {
 	socket.sockets.on('connection', onSocketConnection);
 };
 

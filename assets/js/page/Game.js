@@ -21,7 +21,7 @@ game.pages.AnagramGamePage = game.pages.SuperPage.extend({
 			delete _this.GameApp;
 		}
 		
-		_this.$el.append('<div id="gameContainer"></div>')
+		_this.$el.append('<div id="gameContainer"></div>');
 		_this.GameApp = new game.applications.AnagramGame({
 			Dictionary : _this.options.Dictionary,
 			user : new game.models.User({username : _this.username.val()})

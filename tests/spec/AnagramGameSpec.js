@@ -4,7 +4,7 @@ describe("AnagramGame", function () {
 		dictionary,
 		anagramGame;
 	
-	beforeEach(function() {
+	beforeEach(function () {
 		loadFixtures('game-container.html', 'game-template.html', 'new-game-template.html', 'player-template.html', 'score-template.html', 'game-over-template.html');
 		
 		socket = {
@@ -21,14 +21,26 @@ describe("AnagramGame", function () {
 		spyOn(socket, 'emit');
 		spyOn(socket, 'on');
 		
+		jasmine.Ajax.install();
+		
 		dictionary = new game.applications.Dictionary();
-		dictionary.wordList = wordList;
+		
+		expect(jasmine.Ajax.requests.mostRecent().url).toBe(game.config.DICTIONARY_LOCATION);
+		jasmine.Ajax.requests.mostRecent().response({
+			status : 200,
+			contentType : 'text/plain',
+			responseText : wordList
+		});
 		
 		anagramGame = new game.pages.AnagramGamePage({
 			Dictionary : dictionary
 		});
 		
 		expect($('#gameContainer').length).toEqual(0);
+	});
+	
+	afterEach(function () {
+		jasmine.Ajax.uninstall();
 	});
 	
 	describe('from new can', function () {
@@ -74,7 +86,7 @@ describe("AnagramGame", function () {
 			setExpectationsOfNewGame('username');
 			
 			setFormDetails('', false);
-			expect(function() {
+			expect(function () {
 				anagramGame.$('form#createNewGameForm').submit();
 			}).toThrow('Username not valid');
 			expect($('div#gameContainer h1').length).toEqual(0);
@@ -92,7 +104,7 @@ describe("AnagramGame", function () {
 		});
 		
 		it('set the current player', function () {
-			expect(gameApp.options.user.get('id')).toEqual(null);
+			expect(gameApp.options.user.get('id')).toBe(null);
 			expect(gameApp.options.user.get('username')).toEqual('username');
 			gameApp.onSetPlayer({
 				id : 1,
@@ -150,28 +162,28 @@ describe("AnagramGame", function () {
 					invalidAnagram_1 = 'ssss',
 					invalidAnagram_2 = 'xxishwodxx';
 					
-				expect(gameApp.isAnagram(validAnagram)).toEqual(true);
-				expect(gameApp.isAnagram(invalidAnagram_1)).toEqual(false);
-				expect(gameApp.isAnagram(invalidAnagram_2)).toEqual(false);
+				expect(gameApp.isAnagram(validAnagram)).toBe(true);
+				expect(gameApp.isAnagram(invalidAnagram_1)).toBe(false);
+				expect(gameApp.isAnagram(invalidAnagram_2)).toBe(false);
 			});
 			
 			it('validate a string is a word found in the dictionary', function () {
 				var validWord = 'some',
 					invalidWord = 'idontexist';
 				
-				expect(gameApp.isWord(validWord)).toEqual(true);
-				expect(gameApp.isWord(invalidWord)).toEqual(false);
+				expect(gameApp.isWord(validWord)).toBe(true);
+				expect(gameApp.isWord(invalidWord)).toBe(false);
 			});
 			
 			it('validate a string does not already exist in the leaderboard', function () {
 				var newWord = 'some';
 				
-				expect(gameApp.isUnique(newWord)).toEqual(true);
+				expect(gameApp.isUnique(newWord)).toBe(true);
 				gameApp.onNewWord((new game.models.Word({
 					user : gameApp.options.user,
 					word : newWord
 				})).toJSON());
-				expect(gameApp.isUnique(newWord)).toEqual(false);
+				expect(gameApp.isUnique(newWord)).toBe(false);
 			});
 			
 			it('then submitting a valid word will add a new word', function () {
@@ -237,7 +249,7 @@ describe("AnagramGame", function () {
 				})).toJSON());
 				
 				expect(h1.text()).toEqual('somelongishword');
-				expect(wordInputField.attr('disabled')).toEqual(undefined);
+				expect(wordInputField.attr('disabled')).toBe(undefined);
 				expect(timer.text()).toEqual('5');
 				expect(players.find('li').length).toEqual(2);
 				expect(gameApp.collection.length).toEqual(1);

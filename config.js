@@ -1,7 +1,7 @@
 var game = {};
 
 game.config = {
-	DICTIONARY_LOCATION : 'http://www.bonzagaming.com/codetest/wordlist.txt',
+	DICTIONARY_LOCATION : 'assets/data/words.txt',
 	ANAGRAM_GAME : {
 		LEADERBOARD_SIZE : 10
 	}
