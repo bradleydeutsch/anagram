@@ -218,8 +218,10 @@ game.applications.AnagramGame = game.applications.SuperAppWithView.extend({
 	},
 	
 	addWord : function (word) {
-		this.socket.emit('new word', (new game.models.Word({
-			user : this.options.user,
+		var _this = this;
+		
+		_this.socket.emit('new word', (new game.models.Word({
+			user : _this.options.user,
 			word : word
 		})).toJSON());
 	},

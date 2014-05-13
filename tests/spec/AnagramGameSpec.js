@@ -1,6 +1,7 @@
 describe("AnagramGame", function () {
 	var wordList = 'some\nlist\nof\nwords\nwill\nlive\nhere\nand\nincluding\nreally\nlong\nones\nlike\nexperience',
 		constructorWord = 'cancontainlistofwords',
+		randomeWord = 'somelongishrandomeword',
 		dictionary,
 		anagramGame;
 	
@@ -15,32 +16,22 @@ describe("AnagramGame", function () {
 			connect : function () {
 				return socket;
 			}
-		}
+		};
+		
+		dictionary = {
+			containsWord : function () {},
+			getRandomWord : function () {}
+		};
 		
 		spyOn(io, 'connect').and.callThrough();
 		spyOn(socket, 'emit');
 		spyOn(socket, 'on');
-		
-		jasmine.Ajax.install();
-		
-		dictionary = new game.applications.Dictionary();
-		
-		expect(jasmine.Ajax.requests.mostRecent().url).toBe(game.config.DICTIONARY_LOCATION);
-		jasmine.Ajax.requests.mostRecent().response({
-			status : 200,
-			contentType : 'text/plain',
-			responseText : wordList
-		});
 		
 		anagramGame = new game.pages.AnagramGamePage({
 			Dictionary : dictionary
 		});
 		
 		expect($('#gameContainer').length).toEqual(0);
-	});
-	
-	afterEach(function () {
-		jasmine.Ajax.uninstall();
 	});
 	
 	describe('from new can', function () {
@@ -56,13 +47,6 @@ describe("AnagramGame", function () {
 				expect(typeof(anagramGame.getGame())).toEqual('object');
 				
 				expect(io.connect).toHaveBeenCalled();
-				expect(socket.emit).toHaveBeenCalledWith('new player', jasmine.objectContaining({
-					user : {
-						username : username,
-						id : null,
-						attribute : undefined
-					}
-				}));
 				
 				expect(socket.on).toHaveBeenCalledWith('connect', jasmine.any(Function));
 				expect(socket.on).toHaveBeenCalledWith('set player', jasmine.any(Function));
@@ -72,15 +56,29 @@ describe("AnagramGame", function () {
 				expect(socket.on).toHaveBeenCalledWith('game completed', jasmine.any(Function));
 				expect(socket.on).toHaveBeenCalledWith('new word', jasmine.any(Function));
 				expect(socket.on).toHaveBeenCalledWith('reset game', jasmine.any(Function));
+				
+				
+				expect(socket.emit).toHaveBeenCalledWith('new player', jasmine.objectContaining({
+					user : {
+						username : username,
+						id : null,
+						attribute : undefined
+					},
+					constructorWord : randomeWord
+				}));
 			};
 		
 		it('be initialised with a valid username', function () {
+			spyOn(dictionary, 'getRandomWord').and.returnValue(randomeWord);
+			
 			setFormDetails('username', true);
 			
 			setExpectationsOfNewGame('username');
 		});
 		
 		it('be initialised with a valid username, but then removed by an invalid one', function () {
+			spyOn(dictionary, 'getRandomWord').and.returnValue(randomeWord);
+			
 			setFormDetails('username', true);
 			
 			setExpectationsOfNewGame('username');
@@ -104,7 +102,7 @@ describe("AnagramGame", function () {
 		});
 		
 		it('set the current player', function () {
-			expect(gameApp.options.user.get('id')).toBe(null);
+			expect(gameApp.options.user.get('id')).toBeNull();
 			expect(gameApp.options.user.get('username')).toEqual('username');
 			gameApp.onSetPlayer({
 				id : 1,
@@ -152,6 +150,7 @@ describe("AnagramGame", function () {
 					id : 1,
 					username : 'newname'
 				};
+				
 				gameApp.onSetPlayer(user);
 				gameApp.onNewPlayer(user);
 				gameApp.onStartGame('somelongishword');
@@ -168,10 +167,18 @@ describe("AnagramGame", function () {
 			});
 			
 			it('validate a string is a word found in the dictionary', function () {
-				var validWord = 'some',
-					invalidWord = 'idontexist';
+				var validWord = 'some';
+				
+				spyOn(dictionary, 'containsWord').and.returnValue(true);
 				
 				expect(gameApp.isWord(validWord)).toBe(true);
+			});
+			
+			it('validate a string is NOT a word found in the dictionary', function () {
+				var invalidWord = 'idontexist';
+				
+				spyOn(dictionary, 'containsWord').and.returnValue(false);
+				
 				expect(gameApp.isWord(invalidWord)).toBe(false);
 			});
 			
@@ -190,8 +197,9 @@ describe("AnagramGame", function () {
 				var newWord = 'long';
 				
 				expect(gameApp.$('table').find('tr').length).toEqual(0);
-				
+				spyOn(dictionary, 'containsWord').and.returnValue(true);
 				setFormDetails(newWord);
+				
 				expect(socket.emit).toHaveBeenCalledWith('new word', jasmine.any(Object));
 				
 				gameApp.onNewWord((new game.models.Word({
