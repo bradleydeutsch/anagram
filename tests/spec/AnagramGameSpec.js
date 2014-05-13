@@ -57,7 +57,6 @@ describe("AnagramGame", function () {
 				expect(socket.on).toHaveBeenCalledWith('new word', jasmine.any(Function));
 				expect(socket.on).toHaveBeenCalledWith('reset game', jasmine.any(Function));
 				
-				
 				expect(socket.emit).toHaveBeenCalledWith('new player', jasmine.objectContaining({
 					user : {
 						username : username,
@@ -70,7 +69,6 @@ describe("AnagramGame", function () {
 		
 		it('be initialised with a valid username', function () {
 			spyOn(dictionary, 'getRandomWord').and.returnValue(randomeWord);
-			
 			setFormDetails('username', true);
 			
 			setExpectationsOfNewGame('username');
@@ -78,9 +76,7 @@ describe("AnagramGame", function () {
 		
 		it('be initialised with a valid username, but then removed by an invalid one', function () {
 			spyOn(dictionary, 'getRandomWord').and.returnValue(randomeWord);
-			
 			setFormDetails('username', true);
-			
 			setExpectationsOfNewGame('username');
 			
 			setFormDetails('', false);
@@ -170,7 +166,6 @@ describe("AnagramGame", function () {
 				var validWord = 'some';
 				
 				spyOn(dictionary, 'containsWord').and.returnValue(true);
-				
 				expect(gameApp.isWord(validWord)).toBe(true);
 			});
 			
@@ -178,7 +173,6 @@ describe("AnagramGame", function () {
 				var invalidWord = 'idontexist';
 				
 				spyOn(dictionary, 'containsWord').and.returnValue(false);
-				
 				expect(gameApp.isWord(invalidWord)).toBe(false);
 			});
 			
@@ -199,7 +193,6 @@ describe("AnagramGame", function () {
 				expect(gameApp.$('table').find('tr').length).toEqual(0);
 				spyOn(dictionary, 'containsWord').and.returnValue(true);
 				setFormDetails(newWord);
-				
 				expect(socket.emit).toHaveBeenCalledWith('new word', jasmine.any(Object));
 				
 				gameApp.onNewWord((new game.models.Word({
@@ -213,10 +206,8 @@ describe("AnagramGame", function () {
 				var newWord = 'idontexist';
 				
 				expect(gameApp.$('table').find('tr').length).toEqual(0);
-
 				setFormDetails(newWord);
 				expect(socket.emit).not.toHaveBeenCalledWith('new word', jasmine.any(Object));
-				
 				expect(gameApp.$('table').find('tr').length).toEqual(0);
 			});
 			
@@ -261,9 +252,7 @@ describe("AnagramGame", function () {
 				expect(timer.text()).toEqual('5');
 				expect(players.find('li').length).toEqual(2);
 				expect(gameApp.collection.length).toEqual(1);
-				
 				gameApp.onResetGame();
-				
 				expect(h1.text()).toEqual('...');
 				expect(wordInputField.attr('disabled')).toEqual('disabled');
 				expect(timer.text()).toEqual('...');
