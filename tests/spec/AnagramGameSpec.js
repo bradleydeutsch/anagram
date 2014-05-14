@@ -1,4 +1,4 @@
-describe("AnagramGame", function () {
+describe("An AnagramGame", function () {
 	var wordList = 'some\nlist\nof\nwords\nwill\nlive\nhere\nand\nincluding\nreally\nlong\nones\nlike\nexperience',
 		constructorWord = 'cancontainlistofwords',
 		randomeWord = 'somelongishrandomeword',

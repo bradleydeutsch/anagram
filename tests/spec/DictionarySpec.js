@@ -1,4 +1,4 @@
-describe('Dictionary', function () {
+describe('A dictionary', function () {
 	var wordList = 'some\nlist\nof\nwords\nwill\nlive\nhere\nand\nincluding\nreally\nlong\nones\nlike\nexperience',
 		dictionary;
 	
