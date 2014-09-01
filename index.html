@@ -6,12 +6,18 @@
 	<body>
 		<div id="anagramGameContainer">
 		</div>
-		
+
+        <script type="text/template" id="page-loader-template">
+            <div id="pageLoader">
+                <h1>Please wait...</h1>
+            </div>
+        </script>
+
 		<script type="text/template" id="game-template">
 			<h1>Choose a username</h1>
-			<form id="createNewGameForm">
+			<form id="createNewGameForm"><!-- data-plugins="validateForm" -->
 				<label for="username">Username:</label>
-				<input type="text" id="username" value="Brad" />
+				<input type="text" name="username" id="username" value="Brad" />
 				
 				<input type="submit" value="Start Game &raquo;" />
 			</form>
@@ -45,10 +51,14 @@
 		<script type="text/javascript" src="assets/js/lib/underscore-1.5.2.min.js"></script>
 		<script type="text/javascript" src="assets/js/lib/backbone-1.1.2.min.js"></script>
 		<script type="text/javascript" src="assets/js/lib/backbone-extensions.js"></script>
-		
+
 		<script type="text/javascript" src="assets/js/config.js"></script>
-		
+
+        <script type="text/javascript" src="assets/js/plugins/SuperPlugin.js"></script>
+        <script type="text/javascript" src="assets/js/plugins/validationForm.js"></script>
+
 		<script type="text/javascript" src="assets/js/lib/Utils.js"></script>
+        <script type="text/javascript" src="assets/js/lib/EventListener.js"></script>
 		
 		<script type="text/javascript" src="assets/js/model/SuperModel.js"></script>
 		<script type="text/javascript" src="assets/js/model/User.js"></script>
@@ -67,7 +77,9 @@
 		
 		<script type="text/javascript" src="assets/js/page/SuperPage.js"></script>
 		<script type="text/javascript" src="assets/js/page/Game.js"></script>
-		
+
+        <script type="text/javascript" src="assets/js/boot.js"></script>
+
 		<script type="text/javascript">
 			var ann,
 				dictionary = new game.applications.Dictionary({

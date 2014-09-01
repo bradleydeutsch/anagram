@@ -1,5 +1,5 @@
-module.exports = function (game) {
-	game.models.User = function (startClient, startId, startUsername) {
+module.exports = function (models) {
+	models.User = function (startClient, startId, startUsername) {
 		var client = startClient,
 			id = startId,
 			username = startUsername;
@@ -45,4 +45,4 @@ module.exports = function (game) {
 			wrap : wrap
 		};
 	};
-}
+};

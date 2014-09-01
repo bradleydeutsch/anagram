@@ -16,7 +16,7 @@ game.applications.AnagramGame = game.applications.SuperAppWithView.extend({
 			throw 'Username not valid';
 		}
 		
-		_this.socket = io.connect("http://localhost", {port: 8000, transports: ["websocket"]});
+		_this.socket = io.connect('http://localhost', {port : 8000, transports : ['websocket']});
 		_this.collection = new game.collections.AnagramGameLeaderboard();
 		
 		_this.viewObject = {
@@ -36,7 +36,9 @@ game.applications.AnagramGame = game.applications.SuperAppWithView.extend({
 	
 	postRender : function (evt) {
 		var _this = this;
-		
+
+        game.applications.SuperAppWithView.prototype.postRender.apply(_this, arguments);
+
 		_this.header = _this.$('h1');
 		_this.timer = _this.$('div#timer');
 		_this.listEl = _this.$('table');
@@ -48,42 +50,23 @@ game.applications.AnagramGame = game.applications.SuperAppWithView.extend({
 	setSocketEventHandlers : function () {
 		var _this = this;
 		
-		_this.socket.on('connect', function () {
-			_this.onSocketConnected();
-		});
-		_this.socket.on('set player', function (player) {
-			console.log('set player: ' + JSON.stringify(player));
-			
-			_this.onSetPlayer(player);
-		});
-		_this.socket.on('new player', function (player) {
-			console.log('new player: ' + JSON.stringify(player));
-			
-			_this.onNewPlayer(player);
-		});
-		_this.socket.on('start game', function (constructorWord) {
-			console.log('start game: ' + constructorWord);
-			
-			_this.onStartGame(constructorWord);
-		});
-		_this.socket.on('update time', function (time) {
-			_this.onUpdateTime(time);
-		});
-		_this.socket.on('game completed', function () {
-			console.log('game completed');
-			
-			_this.onGameCompleted();
-		});
-		_this.socket.on('new word', function (word) {
-			console.log('new word: ' + JSON.stringify(word));
-			
-			_this.onNewWord(word);
-		});
-		_this.socket.on('reset game', function (data) {
-			console.log('reset game: ' + JSON.stringify(data));
-			
-			_this.onResetGame(data);
-		});
+		_this.socket.on('connect', _this.onSocketConnected.bind(_this));
+		_this.socket.on('set player', _this.onSetPlayer.bind(_this));
+		_this.socket.on('new player', _this.onNewPlayer.bind(_this));
+		_this.socket.on('start game', _this.onStartGame.bind(_this));
+		_this.socket.on('update time', _this.onUpdateTime.bind(_this));
+		_this.socket.on('game completed', _this.onGameCompleted.bind(_this));
+		_this.socket.on('new word', _this.onNewWord.bind(_this));
+		_this.socket.on('reset game', _this.onResetGame.bind(_this));
+	},
+	
+	removeSocketEventHandlers : function () {
+		var _this = this,
+			event;
+		
+		for (event in _this.socket.$events) {
+			_this.socket.removeAllListeners(event);
+		}
 	},
 	
 	onSocketConnected : function () {
@@ -91,15 +74,25 @@ game.applications.AnagramGame = game.applications.SuperAppWithView.extend({
 	},
 	
 	onSetPlayer : function (player) {
-		this.options.user = new game.models.User(player);
+        var _this = this;
+
+		console.log('set player: ' + JSON.stringify(player));
+		
+		_this.options.user = new game.models.User(player);
+
+        game.eventHandler.publish(null, game.eventHandler.events.GAME_INITIALISED, _this);
 	},
 	
 	onNewPlayer : function (player) {
+		console.log('new player: ' +this.cid + JSON.stringify(player));
+
 		this.players.append(_.template($('#player-template').html(), player));
 	},
 	
 	onStartGame : function (constructorWord) {
 		var _this = this;
+		
+		console.log('start game: ' + constructorWord);
 		
 		_this.buildConstructorStringObj(constructorWord);
 		_this.header.text(constructorWord);
@@ -114,6 +107,8 @@ game.applications.AnagramGame = game.applications.SuperAppWithView.extend({
 		var _this = this,
 			winner = _this.getHighScore();
 		
+		console.log('game completed');
+		
 		_this.form.remove();
 		
 		if (game.utils.isNotEmpty(winner)) {
@@ -126,11 +121,15 @@ game.applications.AnagramGame = game.applications.SuperAppWithView.extend({
 	},
 	
 	onNewWord : function (word) {
+		console.log('new word: ' + JSON.stringify(word));
+		
 		this.collection.add(new game.models.Word(word));
 	},
 	
 	onResetGame : function () {
 		var _this = this;
+		
+		console.log('reset game');
 		
 		_this.header.text('...');
 		_this.form.find('input').attr('disabled', 'disabled');
@@ -145,14 +144,15 @@ game.applications.AnagramGame = game.applications.SuperAppWithView.extend({
 		
 		_this.socket.emit('drop player');
 		
+		_this.removeSocketEventHandlers();
+		
 		game.applications.SuperAppWithView.prototype.remove.apply(_this, arguments);
 	},
 	
 	buildConstructorStringObj : function (string) {
 		var _this = this,
 			constructorStringObj = {},
-			nextChar,
-			i;
+			nextChar, i;
 		
 		for (i = 0; i < string.length; i++) {
 			nextChar = string.charAt(i);
@@ -188,9 +188,7 @@ game.applications.AnagramGame = game.applications.SuperAppWithView.extend({
 	
 	isAnagram : function (string) {
 		var _this =  this,
-			constructorStringObj,
-			nextChar,
-			i;
+			constructorStringObj, nextChar, i;
 		
 		if (string.length > _this.constructorString) {
 			return false;

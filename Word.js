@@ -1,5 +1,5 @@
-module.exports = function (game) {
-	game.models.Word = function (startUser, startWord, startScore) {
+module.exports = function (models) {
+	models.Word = function (startUser, startWord, startScore) {
 		var user = startUser,
 			word = startWord,
 			score = startScore;
@@ -46,4 +46,4 @@ module.exports = function (game) {
 			wrap : wrap
 		};
 	};
-}
+};

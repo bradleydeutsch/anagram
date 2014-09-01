@@ -19,4 +19,8 @@ game.pages = {};
 
 game.views = {};
 
+game.plugins = {};
+
+game.eventHandler = {};
+
 exports.game = game;

@@ -24,3 +24,7 @@ game.models = {};
 game.pages = {};
 
 game.views = {};
+
+game.plugins = {};
+
+game.eventHandler = {};

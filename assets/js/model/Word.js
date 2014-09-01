@@ -1,10 +1,8 @@
 game.models.Word = game.models.SuperModel.extend({
-	defaults : function () {
-		return {
-			user : null,
-			word : null,
-			score : null
-		};
+	defaults : {
+        user : null,
+        word : null,
+        score : null
 	},
 	
 	initialize : function (options) {

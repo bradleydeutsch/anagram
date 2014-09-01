@@ -25,5 +25,7 @@ game.pages.SuperPage = Backbone.View.extend({
 		return _this;
 	},
 	
-	postRender : function (evt) {}
+	postRender : function (evt) {
+        game.utils.bindPlugins();
+    }
 });

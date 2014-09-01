@@ -31,7 +31,9 @@ game.applications.SuperAppWithView = game.applications.SuperApp.extend({
 		return _this;
 	},
 	
-	postRender : function (evt) {},
+	postRender : function (evt) {
+        game.utils.bindPlugins();
+    },
 	
 	addOneInPosition : function (view) {
 		var _this = this,

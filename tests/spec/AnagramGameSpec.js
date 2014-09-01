@@ -1,16 +1,14 @@
-describe("An AnagramGame", function () {
-	var wordList = 'some\nlist\nof\nwords\nwill\nlive\nhere\nand\nincluding\nreally\nlong\nones\nlike\nexperience',
-		constructorWord = 'cancontainlistofwords',
-		randomeWord = 'somelongishrandomeword',
-		dictionary,
-		anagramGame;
+describe('An AnagramGame', function () {
+	var randomWord = 'somelongishrandomWord',
+		leaderboard, dictionary, anagramGame;
 	
 	beforeEach(function () {
-		loadFixtures('game-container.html', 'game-template.html', 'new-game-template.html', 'player-template.html', 'score-template.html', 'game-over-template.html');
+		loadFixtures('page-loader-template.html', 'game-container.html', 'game-template.html', 'new-game-template.html', 'player-template.html', 'score-template.html', 'game-over-template.html');
 		
 		socket = {
 			emit : function () {},
-			on : function () {}
+			on : function () {},
+			removeAllListeners : function () {}
 		};
 		io = {
 			connect : function () {
@@ -18,14 +16,18 @@ describe("An AnagramGame", function () {
 			}
 		};
 		
-		dictionary = {
-			containsWord : function () {},
-			getRandomWord : function () {}
-		};
+		dictionary = jasmine.createSpyObj('game.applications.Dictionary', ['containsWord', 'getRandomWord']);
+		game.collections.AnagramGameLeaderboard = jasmine.createSpy('game.collections.AnagramGameLeaderboard').and.callFake(function () {
+			leaderboard = jasmine.createSpyObj('game.collections.AnagramGameLeaderboard', ['on', 'off', 'add', 'reset', 'getEntryByWord', 'getWordAtPosition', 'getScoreAtPosition', 'getHighScore', 'getEntryAtPosition']);
+			leaderboard.length = 0;
+			
+			return leaderboard;
+		});
 		
 		spyOn(io, 'connect').and.callThrough();
 		spyOn(socket, 'emit');
 		spyOn(socket, 'on');
+		spyOn(socket, 'removeAllListeners');
 		
 		anagramGame = new game.pages.AnagramGamePage({
 			Dictionary : dictionary
@@ -61,28 +63,25 @@ describe("An AnagramGame", function () {
 					user : {
 						username : username,
 						id : null,
-						attribute : undefined
+						attribute : null
 					},
-					constructorWord : randomeWord
+					constructorWord : randomWord
 				}));
 			};
 		
 		it('be initialised with a valid username', function () {
-			spyOn(dictionary, 'getRandomWord').and.returnValue(randomeWord);
+			dictionary.getRandomWord.and.returnValue(randomWord);
 			setFormDetails('username', true);
 			
 			setExpectationsOfNewGame('username');
 		});
 		
 		it('be initialised with a valid username, but then removed by an invalid one', function () {
-			spyOn(dictionary, 'getRandomWord').and.returnValue(randomeWord);
+			dictionary.getRandomWord.and.returnValue(randomWord);
 			setFormDetails('username', true);
 			setExpectationsOfNewGame('username');
 			
-			setFormDetails('', false);
-			expect(function () {
-				anagramGame.$('form#createNewGameForm').submit();
-			}).toThrow('Username not valid');
+			setFormDetails('', true);
 			expect($('div#gameContainer h1').length).toEqual(0);
 			expect(typeof(anagramGame.getGame())).toEqual('undefined');
 		});
@@ -134,6 +133,31 @@ describe("An AnagramGame", function () {
 			expect(timer.text()).toEqual('5');
 		});
 		
+		it('can be removed', function () {
+			socket.$events = {
+				'connect' : function () {},
+				'set player' : function () {},
+				'new player' : function () {},
+				'start game' : function () {},
+				'update time' : function () {},
+				'game completed' : function () {},
+				'new word' : function () {},
+				'reset game' : function () {},
+			};
+			
+			gameApp.remove();
+			
+			expect(socket.emit).toHaveBeenCalledWith('drop player');
+			expect(socket.removeAllListeners).toHaveBeenCalledWith('connect');
+			expect(socket.removeAllListeners).toHaveBeenCalledWith('set player');
+			expect(socket.removeAllListeners).toHaveBeenCalledWith('new player');
+			expect(socket.removeAllListeners).toHaveBeenCalledWith('start game');
+			expect(socket.removeAllListeners).toHaveBeenCalledWith('update time');
+			expect(socket.removeAllListeners).toHaveBeenCalledWith('game completed');
+			expect(socket.removeAllListeners).toHaveBeenCalledWith('new word');
+			expect(socket.removeAllListeners).toHaveBeenCalledWith('reset game');
+		});
+		
 		describe('start a new game and', function () {
 			var setFormDetails = function (word) {
 					gameApp.$('form#submitStringForm input').val(word);
@@ -165,25 +189,27 @@ describe("An AnagramGame", function () {
 			it('validate a string is a word found in the dictionary', function () {
 				var validWord = 'some';
 				
-				spyOn(dictionary, 'containsWord').and.returnValue(true);
+				dictionary.containsWord.and.returnValue(true);
 				expect(gameApp.isWord(validWord)).toBe(true);
 			});
 			
 			it('validate a string is NOT a word found in the dictionary', function () {
 				var invalidWord = 'idontexist';
 				
-				spyOn(dictionary, 'containsWord').and.returnValue(false);
+				dictionary.containsWord.and.returnValue(false);
 				expect(gameApp.isWord(invalidWord)).toBe(false);
 			});
 			
 			it('validate a string does not already exist in the leaderboard', function () {
 				var newWord = 'some';
 				
+				leaderboard.getEntryByWord.and.returnValue(null);
 				expect(gameApp.isUnique(newWord)).toBe(true);
 				gameApp.onNewWord((new game.models.Word({
 					user : gameApp.options.user,
 					word : newWord
 				})).toJSON());
+				leaderboard.getEntryByWord.and.returnValue({});
 				expect(gameApp.isUnique(newWord)).toBe(false);
 			});
 			
@@ -191,7 +217,7 @@ describe("An AnagramGame", function () {
 				var newWord = 'long';
 				
 				expect(gameApp.$('table').find('tr').length).toEqual(0);
-				spyOn(dictionary, 'containsWord').and.returnValue(true);
+				dictionary.containsWord.and.returnValue(true);
 				setFormDetails(newWord);
 				expect(socket.emit).toHaveBeenCalledWith('new word', jasmine.any(Object));
 				
@@ -199,7 +225,8 @@ describe("An AnagramGame", function () {
 					user : gameApp.options.user,
 					word : newWord
 				})).toJSON());
-				expect(gameApp.$('table').find('tr').length).toEqual(1);
+				expect(leaderboard.add.calls.first().args[0] instanceof game.models.Word).toBe(true);
+				// expect(gameApp.$('table').find('tr').length).toEqual(1);
 			});
 			
 			it('then submitting an invalid word will NOT add a new word', function () {
@@ -217,16 +244,11 @@ describe("An AnagramGame", function () {
 			});
 			
 			it('complete a game when the time is up with submitted words', function () {
-				var leaderboardWords = ['last', 'topwordsubmission', 'middle'];
-				
-				for (word in leaderboardWords) {
-					gameApp.onNewWord((new game.models.Word({
-						user : gameApp.options.user,
-						word : leaderboardWords[word]
-					})).toJSON());
-				}
-				
-				gameApp.onGameCompleted();
+				leaderboard.getHighScore.and.returnValue(new game.models.Word({
+					user : gameApp.options.user,
+					word : 'topwordsubmission'
+				}));
+				gameApp.onGameCompleted();				
 				expect(gameApp.$('div#timer').text().trim()).toEqual('Game Over! newname wins with word "topwordsubmission" and a score of 17');
 			});
 			
@@ -246,46 +268,45 @@ describe("An AnagramGame", function () {
 					user : gameApp.options.user,
 					word : 'someword'
 				})).toJSON());
+				leaderboard.length = 1;
 				
 				expect(h1.text()).toEqual('somelongishword');
 				expect(wordInputField.attr('disabled')).toBe(undefined);
 				expect(timer.text()).toEqual('5');
-				expect(players.find('li').length).toEqual(2);
+				// expect(players.find('li').length).toEqual(2);
 				expect(gameApp.collection.length).toEqual(1);
 				gameApp.onResetGame();
+				leaderboard.length = 0;
 				expect(h1.text()).toEqual('...');
 				expect(wordInputField.attr('disabled')).toEqual('disabled');
 				expect(timer.text()).toEqual('...');
-				expect(players.find('li').length).toEqual(1);
+				// expect(players.find('li').length).toEqual(1);
 				expect(gameApp.collection.length).toEqual(0);
 			});
 			
 			describe('with entries in the leaderboard', function () {
-				var leaderboardWords = ['last', 'topwordsubmission', 'middle'];
-				
-				beforeEach(function () {
-					for (word in leaderboardWords) {
-						gameApp.onNewWord((new game.models.Word({
-							user : gameApp.options.user,
-							word : leaderboardWords[word]
-						})).toJSON());
-					}
-				});
-				
 				it('get a high score', function () {
+					leaderboard.getHighScore.and.returnValue(new game.models.Word({
+						user : gameApp.options.user,
+						word : 'topwordsubmission'
+					}));
+					
 					expect(gameApp.getHighScore().get('word')).toEqual('topwordsubmission');
+					expect(leaderboard.getHighScore).toHaveBeenCalled();
 				});
 				
 				it('get a word at a given position', function () {
-					expect(gameApp.getWordAtPosition(0)).toEqual('topwordsubmission');
+					leaderboard.getWordAtPosition.and.returnValue('middle');
+					
 					expect(gameApp.getWordAtPosition(1)).toEqual('middle');
-					expect(gameApp.getWordAtPosition(2)).toEqual('last');
+					expect(leaderboard.getWordAtPosition).toHaveBeenCalledWith(1);
 				});
 				
 				it('get a score at a given position', function () {
-					expect(gameApp.getScoreAtPosition(0)).toEqual(17);
-					expect(gameApp.getScoreAtPosition(1)).toEqual(6);
+					leaderboard.getScoreAtPosition.and.returnValue(4);
+					
 					expect(gameApp.getScoreAtPosition(2)).toEqual(4);
+					expect(leaderboard.getScoreAtPosition).toHaveBeenCalledWith(2);
 				});
 			});
 		});

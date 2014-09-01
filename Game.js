@@ -3,9 +3,9 @@ var util = require('util'),
 	game = require('./config').game,
 	games;
 
-require('./Utils')(game);
-require('./User')(game);
-require('./Word')(game);
+require('./Utils')(game.utils);
+require('./User')(game.models);
+require('./Word')(game.models);
 
 function init() {
 	socket = io.listen(8000);
@@ -63,9 +63,7 @@ var onSocketConnection = function (client) {
 };
 
 var Games = function () {
-	var active,
-		inactive,
-		completed;
+	var active, inactive, completed;
 	
 	var init = function () {
 		active = [];
@@ -133,12 +131,7 @@ var Games = function () {
 };
 
 var Game = function () {
-	var id,
-		players,
-		gameOver,
-		time,
-		constructorWords,
-		timerInterval;
+	var id, players, gameOver, time, constructorWords, timerInterval;
 	
 	var init = function () {
 		id = game.utils.getGUID();

@@ -1,9 +1,5 @@
 describe('A leaderboard', function () {
-	var leaderboard,
-		user,
-		word_1,
-		word_2,
-		word_3;
+	var leaderboard, user, word_1, word_2, word_3;
 	
 	beforeEach(function () {		
 		leaderboard = new game.collections.AnagramGameLeaderboard();
